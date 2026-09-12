@@ -1,0 +1,232 @@
+// Main App component - orchestrates Dashboard, Inventory, Form, Charts, and History
+import React, { useState, useEffect, useCallback } from 'react';
+import Dashboard from './components/Dashboard';
+import TransactionForm from './components/TransactionForm';
+import TransactionHistory from './components/TransactionHistory';
+import ChartBar from './components/ChartBar';
+import ChartLine from './components/ChartLine';
+import DataManagement from './components/DataManagement';
+import InventoryTab from './components/InventoryTab';
+import SellModal from './components/SellModal';
+import { useTransactions } from './hooks/useTransactions';
+import { getChartData, addChartData } from './utils/chartStorage';
+import { calculateDailySummary, calculateProfits } from './utils/chartHelpers';
+import { getProducts, reduceStock } from './utils/inventoryStorage';
+
+const App = () => {
+  const [isDark, setIsDark] = useState(false);
+  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [products, setProducts] = useState([]);
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [sellProduct, setSellProduct] = useState(null);
+
+  // Initialize dark mode from localStorage or system preference
+  useEffect(() => {
+    const stored = localStorage.getItem('darkMode');
+    if (stored !== null) {
+      setIsDark(JSON.parse(stored));
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDark(prefersDark);
+    }
+  }, []);
+
+  // Apply dark class to html element and persist to localStorage
+  useEffect(() => {
+    const html = document.documentElement;
+    if (isDark) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDark));
+  }, [isDark]);
+
+  const {
+    transactions,
+    allTransactions,
+    filter,
+    setFilter,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    summary,
+  } = useTransactions();
+
+  // Chart data state
+  const [chartData, setChartData] = useState([]);
+
+  // Load chart data
+  const loadChartData = useCallback(() => {
+    setChartData(getChartData());
+  }, []);
+
+  // Load chart data on mount
+  useEffect(() => {
+    loadChartData();
+  }, [loadChartData]);
+
+  // Load products
+  const loadProducts = useCallback(() => {
+    setProducts(getProducts());
+  }, []);
+
+  // Load products on mount
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  // Handle sell from dashboard or inventory
+  const handleSellProduct = (product) => {
+    setSellProduct(product);
+    setShowSellModal(true);
+  };
+
+  // Handle sell completion - reduce stock + create transactions
+  const handleSellComplete = (cart, paymentStatus, buyerName) => {
+    const now = new Date().toISOString();
+
+    cart.forEach(item => {
+      // Reduce stock
+      reduceStock(item.productId, item.quantity);
+
+      // Create transaction for each item
+      addTransaction({
+        type: 'pemasukan',
+        amount: item.subtotal,
+        category: 'Penjualan Produk',
+        note: `${item.name} x${item.quantity}`,
+        date: now,
+        paymentStatus: paymentStatus,
+        buyerName: buyerName,
+      });
+    });
+
+    // Refresh data
+    loadProducts();
+    loadChartData();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10 dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">💰 Keuangan Usaha</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Manajemen penjualan & pengeluaran harian</p>
+            </div>
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => setCurrentTab('dashboard')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentTab === 'dashboard'
+                  ? 'bg-gray-900 text-white dark:bg-emerald-600'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              📊 Dashboard
+            </button>
+            <button
+              onClick={() => setCurrentTab('inventory')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+                currentTab === 'inventory'
+                  ? 'bg-gray-900 text-white dark:bg-emerald-600'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              📦 Inventory
+              {products.filter(p => p.stock > 0 && p.stock < 5).length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {products.filter(p => p.stock > 0 && p.stock < 5).length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-2xl mx-auto px-4 py-6">
+        {currentTab === 'dashboard' ? (
+          <>
+            {/* Dashboard Summary */}
+            <Dashboard
+              summary={summary}
+              products={products}
+              onSellProduct={handleSellProduct}
+              onViewAllProducts={() => setCurrentTab('inventory')}
+            />
+
+            {/* Transaction Form */}
+            <TransactionForm onAdd={addTransaction} />
+
+            {/* Transaction History */}
+            <TransactionHistory
+              transactions={transactions}
+              filter={filter}
+              onFilterChange={setFilter}
+              onUpdate={updateTransaction}
+              onDelete={deleteTransaction}
+            />
+
+            {/* Chart Section */}
+            <div className="mt-8">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">📊 Grafik Keuangan</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <ChartBar chartData={chartData} />
+                <ChartLine chartData={chartData} />
+              </div>
+            </div>
+
+            {/* Data Management */}
+            <div className="mt-6">
+              <DataManagement
+                allTransactions={allTransactions}
+                chartData={chartData}
+                onChartUpdate={loadChartData}
+              />
+            </div>
+          </>
+        ) : (
+          /* Inventory Tab */
+          <InventoryTab
+            products={products}
+            onProductsChange={loadProducts}
+            onSellProduct={handleSellProduct}
+          />
+        )}
+      </main>
+
+      {/* Sell Modal */}
+      <SellModal
+        isOpen={showSellModal}
+        onClose={() => {
+          setShowSellModal(false);
+          setSellProduct(null);
+        }}
+        products={products}
+        onSell={handleSellComplete}
+        initialProduct={sellProduct}
+      />
+
+      {/* Footer */}
+      <footer className="text-center py-4 text-sm text-gray-400 dark:text-gray-500">
+        MVP v1.0 • Data tersimpan di browser Anda
+      </footer>
+    </div>
+  );
+};
+
+export default App;
