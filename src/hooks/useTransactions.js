@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getTransactions, addTransaction, updateTransaction, deleteTransaction } from '../utils/storage';
+import { getTransactions, addTransaction, updateTransaction, deleteTransaction, clearTransactions } from '../utils/storage';
 
 // Custom hook for managing transaction state with LocalStorage
 export const useTransactions = () => {
@@ -8,6 +8,11 @@ export const useTransactions = () => {
 
   // Load transactions on mount
   useEffect(() => {
+    setTransactions(getTransactions());
+  }, []);
+
+  // Refresh transactions from localStorage
+  const refreshTransactions = useCallback(() => {
     setTransactions(getTransactions());
   }, []);
 
@@ -29,6 +34,12 @@ export const useTransactions = () => {
   const handleDelete = useCallback((id) => {
     deleteTransaction(id);
     setTransactions(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Clear all transactions
+  const handleClearAll = useCallback(() => {
+    clearTransactions();
+    setTransactions([]);
   }, []);
 
   // Filter transactions based on current filter
@@ -65,6 +76,8 @@ export const useTransactions = () => {
     addTransaction: handleAdd,
     updateTransaction: handleUpdate,
     deleteTransaction: handleDelete,
+    clearAllTransactions: handleClearAll,
+    refreshTransactions,
     summary,
   };
 };

@@ -58,3 +58,8 @@ export const deleteTransaction = (id) => {
   saveTransactions(filtered);
   return filtered;
 };
+
+// Clear all transactions
+export const clearTransactions = () => {
+  localStorage.removeItem(STORAGE_KEY);
+};

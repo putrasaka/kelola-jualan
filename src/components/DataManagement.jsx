@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { getChartData, addChartData, updateChartData, deleteChartData } from '../utils/chartStorage';
 import { calculateDailySummary, calculateProfits, formatRupiah, formatDateLabel } from '../utils/chartHelpers';
+import { addHistoryEntry } from '../utils/historyStorage';
 
-const DataManagement = ({ allTransactions, chartData, onChartUpdate }) => {
+const DataManagement = ({ allTransactions, chartData, onChartUpdate, onTransactionsCleared }) => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [message, setMessage] = useState(null);
@@ -14,45 +15,58 @@ const DataManagement = ({ allTransactions, chartData, onChartUpdate }) => {
     setTimeout(() => setMessage(null), 3000);
   };
 
-  // Send today's transactions to chart data
+  // Send today's transactions to chart data + history
   const handleSendToday = () => {
+    if (allTransactions.length === 0) {
+      showMessage('Tidak ada transaksi untuk dikirim', 'error');
+      return;
+    }
+
+    // 1. Save all transactions to history
+    allTransactions.forEach(tx => {
+      addHistoryEntry({
+        buyerName: tx.buyerName || '-',
+        amount: tx.amount,
+        type: tx.paymentStatus === 'utang' ? 'utang' : 'cash',
+        date: tx.date,
+        category: tx.category,
+        note: tx.note || '',
+        status: 'active',
+      });
+    });
+
+    // 2. Save to chart data (keep existing logic)
     const today = new Date().toISOString().slice(0, 10);
     const todayTransactions = allTransactions.filter(tx => {
       const txDate = new Date(tx.date).toISOString().slice(0, 10);
       return txDate === today;
     });
 
-    if (todayTransactions.length === 0) {
-      showMessage('Tidak ada transaksi hari ini untuk dikirim', 'error');
-      return;
+    if (todayTransactions.length > 0) {
+      const existing = chartData.find(d => d.date === today);
+      const summary = calculateDailySummary(todayTransactions);
+      const profits = calculateProfits(summary);
+
+      const entryData = {
+        date: today,
+        pemasukkan: summary.pemasukkan,
+        pengeluaran: summary.pengeluaran,
+        utang: summary.utang,
+        labaKotor: profits.labaKotor,
+        labaBersih: profits.labaBersih,
+      };
+
+      if (existing) {
+        updateChartData(existing.id, entryData);
+      } else {
+        addChartData(entryData);
+      }
     }
 
-    // Check if today already exists in chart data
-    const existing = chartData.find(d => d.date === today);
-
-    const summary = calculateDailySummary(todayTransactions);
-    const profits = calculateProfits(summary);
-
-    const entryData = {
-      date: today,
-      pemasukkan: summary.pemasukkan,
-      pengeluaran: summary.pengeluaran,
-      utang: summary.utang,
-      labaKotor: profits.labaKotor,
-      labaBersih: profits.labaBersih,
-    };
-
-    if (existing) {
-      // Update existing data
-      updateChartData(existing.id, entryData);
-      onChartUpdate();
-      showMessage('Data hari ini berhasil diupdate!');
-    } else {
-      // Create new data
-      addChartData(entryData);
-      onChartUpdate();
-      showMessage('Data hari ini berhasil dikirim!');
-    }
+    // 3. Clear transaction table
+    if (onTransactionsCleared) onTransactionsCleared();
+    onChartUpdate();
+    showMessage(`${allTransactions.length} transaksi berhasil dikirim ke history!`);
   };
 
   // Start editing

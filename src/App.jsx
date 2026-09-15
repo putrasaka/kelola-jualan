@@ -8,6 +8,7 @@ import ChartLine from './components/ChartLine';
 import DataManagement from './components/DataManagement';
 import InventoryTab from './components/InventoryTab';
 import SellModal from './components/SellModal';
+import HistoryTab from './components/HistoryTab';
 import { useTransactions } from './hooks/useTransactions';
 import { getChartData, addChartData } from './utils/chartStorage';
 import { calculateDailySummary, calculateProfits } from './utils/chartHelpers';
@@ -50,6 +51,7 @@ const App = () => {
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    clearAllTransactions,
     summary,
   } = useTransactions();
 
@@ -153,6 +155,16 @@ const App = () => {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setCurrentTab('history')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentTab === 'history'
+                  ? 'bg-gray-900 text-white dark:bg-emerald-600'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              📋 History
+            </button>
           </div>
         </div>
       </header>
@@ -196,16 +208,20 @@ const App = () => {
                 allTransactions={allTransactions}
                 chartData={chartData}
                 onChartUpdate={loadChartData}
+                onTransactionsCleared={clearAllTransactions}
               />
             </div>
           </>
-        ) : (
+        ) : currentTab === 'inventory' ? (
           /* Inventory Tab */
           <InventoryTab
             products={products}
             onProductsChange={loadProducts}
             onSellProduct={handleSellProduct}
           />
+        ) : (
+          /* History Tab */
+          <HistoryTab onTransactionUpdate={loadChartData} onAddTransaction={addTransaction} />
         )}
       </main>
 
