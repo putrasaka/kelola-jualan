@@ -1,17 +1,12 @@
-// Main App component - orchestrates Dashboard, Inventory, Form, Charts, and History
+// Main App component - orchestrates Dashboard, Inventory, Form, and History
 import React, { useState, useEffect, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
 import TransactionHistory from './components/TransactionHistory';
-import ChartBar from './components/ChartBar';
-import ChartLine from './components/ChartLine';
-import DataManagement from './components/DataManagement';
 import InventoryTab from './components/InventoryTab';
 import SellModal from './components/SellModal';
 import HistoryTab from './components/HistoryTab';
 import { useTransactions } from './hooks/useTransactions';
-import { getChartData, addChartData } from './utils/chartStorage';
-import { calculateDailySummary, calculateProfits } from './utils/chartHelpers';
 import { getProducts, reduceStock } from './utils/inventoryStorage';
 
 const App = () => {
@@ -45,28 +40,14 @@ const App = () => {
 
   const {
     transactions,
-    allTransactions,
     filter,
     setFilter,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    clearAllTransactions,
+    refreshTransactions,
     summary,
   } = useTransactions();
-
-  // Chart data state
-  const [chartData, setChartData] = useState([]);
-
-  // Load chart data
-  const loadChartData = useCallback(() => {
-    setChartData(getChartData());
-  }, []);
-
-  // Load chart data on mount
-  useEffect(() => {
-    loadChartData();
-  }, [loadChartData]);
 
   // Load products
   const loadProducts = useCallback(() => {
@@ -94,7 +75,7 @@ const App = () => {
 
       // Create transaction for each item
       addTransaction({
-        type: 'pemasukan',
+        type: paymentStatus === 'utang' ? 'pengeluaran' : 'pemasukan',
         amount: item.subtotal,
         category: 'Penjualan Produk',
         note: `${item.name} x${item.quantity}`,
@@ -106,7 +87,6 @@ const App = () => {
 
     // Refresh data
     loadProducts();
-    loadChartData();
   };
 
   return (
@@ -192,25 +172,6 @@ const App = () => {
               onUpdate={updateTransaction}
               onDelete={deleteTransaction}
             />
-
-            {/* Chart Section */}
-            <div className="mt-8">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">📊 Grafik Keuangan</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <ChartBar chartData={chartData} />
-                <ChartLine chartData={chartData} />
-              </div>
-            </div>
-
-            {/* Data Management */}
-            <div className="mt-6">
-              <DataManagement
-                allTransactions={allTransactions}
-                chartData={chartData}
-                onChartUpdate={loadChartData}
-                onTransactionsCleared={clearAllTransactions}
-              />
-            </div>
           </>
         ) : currentTab === 'inventory' ? (
           /* Inventory Tab */
@@ -221,7 +182,11 @@ const App = () => {
           />
         ) : (
           /* History Tab */
-          <HistoryTab onTransactionUpdate={loadChartData} onAddTransaction={addTransaction} />
+          <HistoryTab
+            onAddTransaction={addTransaction}
+            onDeleteTransaction={deleteTransaction}
+            onRefreshTransactions={refreshTransactions}
+          />
         )}
       </main>
 
@@ -239,7 +204,7 @@ const App = () => {
 
       {/* Footer */}
       <footer className="text-center py-4 text-sm text-gray-400 dark:text-gray-500">
-        MVP v1.0 • Data tersimpan di browser Anda
+        MVP | <version>1.1.0</version>
       </footer>
     </div>
   );

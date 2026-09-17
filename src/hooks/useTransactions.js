@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getTransactions, addTransaction, updateTransaction, deleteTransaction, clearTransactions } from '../utils/storage';
+import { addHistoryEntry } from '../utils/historyStorage';
 
 // Custom hook for managing transaction state with LocalStorage
 export const useTransactions = () => {
@@ -16,10 +17,22 @@ export const useTransactions = () => {
     setTransactions(getTransactions());
   }, []);
 
-  // Add new transaction
+  // Add new transaction + auto-save to history
   const handleAdd = useCallback((data) => {
     const newTx = addTransaction(data);
     setTransactions(prev => [newTx, ...prev]);
+
+    // Auto-save to history (realtime)
+    addHistoryEntry({
+      buyerName: data.buyerName || '-',
+      amount: data.amount,
+      type: data.paymentStatus === 'utang' ? 'utang' : 'cash',
+      date: data.date,
+      category: data.category,
+      note: data.note || '',
+      status: 'active',
+      transactionId: data.paymentStatus === 'utang' ? newTx.id : null,
+    });
   }, []);
 
   // Update existing transaction
@@ -63,7 +76,7 @@ export const useTransactions = () => {
       .filter(t => t.type === 'pemasukan')
       .reduce((sum, t) => sum + t.amount, 0),
     totalExpense: todayTransactions
-      .filter(t => t.type === 'pengeluaran')
+      .filter(t => t.type === 'pengeluaran' || t.type === 'utang')
       .reduce((sum, t) => sum + t.amount, 0),
   };
   summary.profit = summary.totalIncome - summary.totalExpense;

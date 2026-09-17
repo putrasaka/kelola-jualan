@@ -1,6 +1,6 @@
 // History Tab component - displays cash & utang transaction history side by side
 import React, { useState } from 'react';
-import { getHistory, getCashHistory, getUtangHistory, addHistoryEntry, deleteHistoryEntry, clearHistory } from '../utils/historyStorage';
+import { getCashHistory, getUtangHistory, deleteHistoryEntry, clearHistory } from '../utils/historyStorage';
 
 // Format number to Rupiah
 const formatRupiah = (amount) => {
@@ -23,7 +23,7 @@ const formatDate = (dateStr) => {
   });
 };
 
-const HistoryTab = ({ onTransactionUpdate, onAddTransaction }) => {
+const HistoryTab = ({ onAddTransaction, onDeleteTransaction, onRefreshTransactions }) => {
   const [cashHistory, setCashHistory] = useState(getCashHistory());
   const [utangHistory, setUtangHistory] = useState(getUtangHistory());
   const [message, setMessage] = useState(null);
@@ -42,7 +42,7 @@ const HistoryTab = ({ onTransactionUpdate, onAddTransaction }) => {
 
   // Handle lunasi (pay off utang)
   const handleLunasi = (entry) => {
-    // 1. Add pemasukan transaction to dashboard via hook
+    // 1. Add pemasukan transaction to dashboard via hook (auto-saves to history)
     onAddTransaction({
       type: 'pemasukan',
       amount: entry.amount,
@@ -56,18 +56,17 @@ const HistoryTab = ({ onTransactionUpdate, onAddTransaction }) => {
     // 2. Delete original utang entry from history
     deleteHistoryEntry(entry.id);
 
-    // 3. Add cash entry to history with label "Utang lunas"
-    addHistoryEntry({
-      buyerName: entry.buyerName,
-      amount: entry.amount,
-      type: 'cash',
-      date: new Date().toISOString(),
-      category: entry.category,
-      note: 'Utang lunas',
-      status: 'active',
-    });
+    // 3. Delete original utang transaction from finance_transactions
+    if (entry.transactionId && onDeleteTransaction) {
+      onDeleteTransaction(entry.transactionId);
+    }
 
-    // Refresh
+    // 4. Refresh transactions in dashboard
+    if (onRefreshTransactions) {
+      onRefreshTransactions();
+    }
+
+    // Refresh histories
     refreshHistories();
     showMessage(`Utang ${entry.buyerName} berhasil dilunasi!`);
   };
