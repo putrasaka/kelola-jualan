@@ -1,5 +1,6 @@
 // Add/Edit Product Modal component
 import React, { useState, useEffect } from 'react';
+import { Pencil, Package, X } from 'lucide-react';
 
 const AddProductModal = ({ isOpen, onClose, onSave, editProduct }) => {
   const [formData, setFormData] = useState({
@@ -57,13 +58,13 @@ const AddProductModal = ({ isOpen, onClose, onSave, editProduct }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {editProduct ? '✏️ Edit Produk' : '📦 Tambah Produk'}
+            {editProduct ? (<><Pencil size={20} /> Edit Produk</>) : (<><Package size={20} /> Tambah Produk</>)}
           </h3>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 

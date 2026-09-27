@@ -8,6 +8,7 @@ import SellModal from './components/SellModal';
 import HistoryTab from './components/HistoryTab';
 import { useTransactions } from './hooks/useTransactions';
 import { getProducts, reduceStock } from './utils/inventoryStorage';
+import { Wallet, Sun, Moon, LayoutDashboard, Package, History } from 'lucide-react';
 
 const App = () => {
   const [isDark, setIsDark] = useState(false);
@@ -45,6 +46,7 @@ const App = () => {
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    clearAllTransactions,
     refreshTransactions,
     summary,
   } = useTransactions();
@@ -96,7 +98,7 @@ const App = () => {
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">💰 Keuangan Usaha</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"><Wallet size={22} className="text-emerald-600 dark:text-emerald-400" /> Keuangan Usaha</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Manajemen penjualan & pengeluaran harian</p>
             </div>
             <button
@@ -104,7 +106,7 @@ const App = () => {
               className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
 
@@ -112,23 +114,23 @@ const App = () => {
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => setCurrentTab('dashboard')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
                 currentTab === 'dashboard'
                   ? 'bg-gray-900 text-white dark:bg-emerald-600'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
-              📊 Dashboard
+              <LayoutDashboard size={16} /> Dashboard
             </button>
             <button
               onClick={() => setCurrentTab('inventory')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 relative ${
                 currentTab === 'inventory'
                   ? 'bg-gray-900 text-white dark:bg-emerald-600'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
-              📦 Inventory
+              <Package size={16} /> Inventory
               {products.filter(p => p.stock > 0 && p.stock < 5).length > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center">
                   {products.filter(p => p.stock > 0 && p.stock < 5).length}
@@ -137,13 +139,13 @@ const App = () => {
             </button>
             <button
               onClick={() => setCurrentTab('history')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
                 currentTab === 'history'
                   ? 'bg-gray-900 text-white dark:bg-emerald-600'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
-              📋 History
+              <History size={16} /> History
             </button>
           </div>
         </div>
@@ -171,6 +173,7 @@ const App = () => {
               onFilterChange={setFilter}
               onUpdate={updateTransaction}
               onDelete={deleteTransaction}
+              onClearAll={clearAllTransactions}
             />
           </>
         ) : currentTab === 'inventory' ? (
@@ -204,7 +207,7 @@ const App = () => {
 
       {/* Footer */}
       <footer className="text-center py-4 text-sm text-gray-400 dark:text-gray-500">
-        MVP | <version>1.1.0</version>
+        MVP | <version>1.1.1</version>
       </footer>
     </div>
   );

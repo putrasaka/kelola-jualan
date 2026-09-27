@@ -1,6 +1,7 @@
 // Dashboard component - displays daily summary cards and product stock overview
 import React from 'react';
 import ProductCard from './ProductCard';
+import { TrendingUp, TrendingDown, Coins, TriangleAlert, Package } from 'lucide-react';
 
 // Format number to Indonesian Rupiah
 const formatRupiah = (amount) => {
@@ -15,28 +16,28 @@ const formatRupiah = (amount) => {
 const Dashboard = ({ summary, products, onSellProduct, onViewAllProducts }) => {
   const cards = [
     {
-      title: 'Pemasukan Hari Ini',
+      title: 'Total Pemasukan',
       value: summary.totalIncome,
       color: 'text-emerald-400 dark:text-emerald-300',
       bg: 'bg-emerald-50 dark:bg-emerald-900/20',
       border: 'border-emerald-200 dark:border-emerald-800',
-      icon: '📈',
+      icon: <TrendingUp size={28} />,
     },
     {
-      title: 'Pengeluaran Hari Ini',
+      title: 'Total Pengeluaran',
       value: summary.totalExpense,
       color: 'text-red-400 dark:text-red-300',
       bg: 'bg-red-50 dark:bg-red-900/20',
       border: 'border-red-200 dark:border-red-800',
-      icon: '📉',
+      icon: <TrendingDown size={28} />,
     },
     {
-      title: 'Profit Bersih Hari Ini',
+      title: 'Total Profit',
       value: summary.profit,
       color: summary.profit >= 0 ? 'text-emerald-400 dark:text-emerald-300' : 'text-red-400 dark:text-red-300',
       bg: summary.profit >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20',
       border: summary.profit >= 0 ? 'border-emerald-200 dark:border-emerald-800' : 'border-red-200 dark:border-red-800',
-      icon: summary.profit >= 0 ? '💰' : '⚠️',
+      icon: summary.profit >= 0 ? <Coins size={28} /> : <TriangleAlert size={28} />,
     },
   ];
 
@@ -72,8 +73,8 @@ const Dashboard = ({ summary, products, onSellProduct, onViewAllProducts }) => {
       {products.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              📦 Stok Ready
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Package size={20} /> Stok Ready
             </h2>
             {products.length > 6 && (
               <button
@@ -89,7 +90,7 @@ const Dashboard = ({ summary, products, onSellProduct, onViewAllProducts }) => {
           {lowStockProducts.length > 0 && (
             <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                ⚠️ <strong>{lowStockProducts.length} produk</strong> stok hampir habis:{' '}
+                <TriangleAlert size={14} /> <strong>{lowStockProducts.length} produk</strong> stok hampir habis:{' '}
                 {lowStockProducts.map(p => p.name).join(', ')}
               </p>
             </div>

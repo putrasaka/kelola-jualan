@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ProductCard from './ProductCard';
 import AddProductModal from './AddProductModal';
 import { addProduct, updateProduct, deleteProduct } from '../utils/inventoryStorage';
+import { Package } from 'lucide-react';
 
 const InventoryTab = ({ products, onProductsChange, onSellProduct }) => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -51,8 +52,8 @@ const InventoryTab = ({ products, onProductsChange, onSellProduct }) => {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          📦 Inventaris Barang
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Package size={22} /> Inventaris Barang
         </h2>
         <button
           onClick={() => {

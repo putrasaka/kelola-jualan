@@ -1,5 +1,6 @@
 // Sell Modal component - multi-item cart with payment status
 import React, { useState, useEffect } from 'react';
+import { ShoppingCart, X, Banknote, Receipt } from 'lucide-react';
 
 // Format number to Rupiah
 const formatRupiah = (amount) => {
@@ -115,13 +116,13 @@ const SellModal = ({ isOpen, onClose, products, onSell, initialProduct }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            🛒 Jual Barang
+            <ShoppingCart size={20} /> Jual Barang
           </h3>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -208,7 +209,7 @@ const SellModal = ({ isOpen, onClose, products, onSell, initialProduct }) => {
                         className="w-7 h-7 flex items-center justify-center bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg text-sm transition-colors"
                         title="Hapus dari keranjang"
                       >
-                        ✕
+                        <X size={14} />
                       </button>
                     </div>
                   </div>
@@ -257,7 +258,7 @@ const SellModal = ({ isOpen, onClose, products, onSell, initialProduct }) => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                💵 Cash
+                <Banknote size={16} /> Cash
               </button>
               <button
                 type="button"
@@ -268,7 +269,7 @@ const SellModal = ({ isOpen, onClose, products, onSell, initialProduct }) => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                🧾 Utang
+                <Receipt size={16} /> Utang
               </button>
             </div>
           </div>

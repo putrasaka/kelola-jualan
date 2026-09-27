@@ -1,5 +1,6 @@
 // Transaction Form component - input new transactions
 import React, { useState } from 'react';
+import { Plus, Banknote, Receipt } from 'lucide-react';
 
 const kategoriOptions = [
   'Penjualan Produk',
@@ -69,7 +70,7 @@ const TransactionForm = ({ onAdd }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
       >
-        <span className="text-lg">+</span>
+        <Plus size={20} />
         <span>Tambah Transaksi</span>
       </button>
 
@@ -117,7 +118,7 @@ const TransactionForm = ({ onAdd }) => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                💵 Cash
+                <Banknote size={16} /> Cash
               </button>
               <button
                 type="button"
@@ -128,7 +129,7 @@ const TransactionForm = ({ onAdd }) => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                🧾 Utang
+                <Receipt size={16} /> Utang
               </button>
             </div>
           </div>

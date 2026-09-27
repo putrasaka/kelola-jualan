@@ -67,15 +67,13 @@ export const useTransactions = () => {
     return true;
   });
 
-  // Calculate daily summary
-  const today = new Date().toDateString();
-  const todayTransactions = transactions.filter(t => new Date(t.date).toDateString() === today);
-
+  // Calculate cumulative summary across all stored transactions.
+  // No date filter: figures follow the transaction list and only reset when it is empty.
   const summary = {
-    totalIncome: todayTransactions
+    totalIncome: transactions
       .filter(t => t.type === 'pemasukan')
       .reduce((sum, t) => sum + t.amount, 0),
-    totalExpense: todayTransactions
+    totalExpense: transactions
       .filter(t => t.type === 'pengeluaran' || t.type === 'utang')
       .reduce((sum, t) => sum + t.amount, 0),
   };

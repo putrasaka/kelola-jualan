@@ -1,5 +1,6 @@
 // Transaction History component - table with filters, edit, delete
 import React, { useState } from 'react';
+import { Pencil, Trash2, TrendingUp, TrendingDown, Receipt, User } from 'lucide-react';
 
 // Format number to Indonesian Rupiah
 const formatRupiah = (amount) => {
@@ -30,7 +31,7 @@ const kategoriOptions = [
   'Lainnya',
 ];
 
-const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, onDelete }) => {
+const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, onDelete, onClearAll }) => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
 
@@ -70,6 +71,13 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
     setEditData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Delete every transaction
+  const handleClearAll = () => {
+    if (window.confirm('Yakin ingin menghapus SEMUA transaksi? Tindakan ini tidak bisa dibatalkan.')) {
+      onClearAll();
+    }
+  };
+
   const filters = [
     { key: 'all', label: 'Semua' },
     { key: 'today', label: 'Hari Ini' },
@@ -80,7 +88,7 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
   return (
     <div className="bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
       {/* Filter Tabs */}
-      <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="flex items-center border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
         {filters.map(f => (
           <button
             key={f.key}
@@ -94,6 +102,15 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
             {f.label}
           </button>
         ))}
+        {transactions.length > 0 && (
+          <button
+            onClick={handleClearAll}
+            title="Hapus semua transaksi"
+            className="ml-auto px-3 py-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors whitespace-nowrap"
+          >
+            <Trash2 size={14} /> Hapus Semua
+          </button>
+        )}
       </div>
 
       {/* Transaction List */}
@@ -185,7 +202,7 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
                       tx.type === 'pemasukan' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30'
                     }`}>
-                      {tx.type === 'pemasukan' ? '📈' : '📉'}
+                      {tx.type === 'pemasukan' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -195,7 +212,7 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
                             : tx.type === 'pemasukan' ? 'text-emerald-600' : 'text-red-600'
                         }`}>
                           {tx.type === 'pemasukan' ? '+' : '-'} {formatRupiah(tx.amount)}
-                          {tx.paymentStatus === 'utang' && ' 🧾'}
+                          {tx.paymentStatus === 'utang' && (<> <Receipt size={14} /></>)}
                         </span>
                         <span className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
                           {tx.category}
@@ -207,7 +224,7 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
                         )}
                         {tx.buyerName && (
                           <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
-                            👤 {tx.buyerName}
+                            <User size={12} /> {tx.buyerName}
                           </span>
                         )}
                       </div>
@@ -223,14 +240,14 @@ const TransactionHistory = ({ transactions, filter, onFilterChange, onUpdate, on
                       className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:text-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       title="Edit"
                     >
-                      ✏️
+                      <Pencil size={18} />
                     </button>
                     <button
                       onClick={() => onDelete(tx.id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Hapus"
                     >
-                      🗑️
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
